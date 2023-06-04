@@ -271,8 +271,7 @@ import java.io.*;
 import java.net.Socket;
 
 public class ClientChat {
-    //private static final String SERVER_HOST = "localhost";
-    private static final String SERVER_HOST = "157.158.137.6";
+    private static final String SERVER_HOST = "localhost";
     private static final int SERVER_PORT = 8080;
 
     public static void main(String[] args) {
@@ -281,13 +280,13 @@ public class ClientChat {
             System.out.println("Connected to chat server at " + SERVER_HOST + ":" + SERVER_PORT);
 
             BufferedReader serverIn = new BufferedReader(new InputStreamReader(serverSocket.getInputStream()));
-            OutputStream serverOut = serverSocket.getOutputStream();//new PrintWriter(serverSocket.getOutputStream(), true);
+            PrintWriter serverOut = new PrintWriter(serverSocket.getOutputStream(), true);
 
             BufferedReader consoleIn = new BufferedReader(new InputStreamReader(System.in));
 
             System.out.print("Enter your username: ");
             String username = consoleIn.readLine();
-            serverOut.write((username + "\n").getBytes());//serverOut.println(username);
+            serverOut.println(username);
 
             Thread serverThread = new Thread(() -> {
                 try {
@@ -307,19 +306,16 @@ public class ClientChat {
             while ((clientMessage = consoleIn.readLine()) != null) {
                 if (clientMessage.startsWith("/upload")) {
                     String filePath = clientMessage.substring("/upload ".length());
-                    uploadFile(filePath, serverOut);
+                    uploadFile(filePath, serverSocket.getOutputStream());
                 } else if (clientMessage.startsWith("/download")) {
                     String fileName = clientMessage.substring("/download ".length());
-                    //serverOut.println(clientMessage);
-                    serverOut.write((clientMessage+"\n").getBytes());
+                    serverOut.println(clientMessage);
                     downloadFile(fileName, username, serverIn);
-                } else if (clientMessage.startsWith("/logout")) {
-                    //serverOut.println("/logout");
-                    serverOut.write(("/logout\n").getBytes());
+                } else if (clientMessage.equals("/logout")) {
+                    serverOut.println("/logout");
                     break;
-                }
-                else {
-                    serverOut.write((clientMessage + "\n").getBytes());//serverOut.println(clientMessage);
+                } else {
+                    serverOut.println(clientMessage);
                 }
             }
 
@@ -338,22 +334,20 @@ public class ClientChat {
                 return;
             }
 
-            serverOut.write(("/upload " + file.getName() + "\n").getBytes());
+            PrintWriter printWriter = new PrintWriter(serverOut, true);
+            printWriter.println("/upload " + file.getName());
 
             FileInputStream fileInput = new FileInputStream(file);
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[8192];
             int bytesRead;
             while ((bytesRead = fileInput.read(buffer)) != -1) {
                 serverOut.write(buffer, 0, bytesRead);
             }
 
-            serverOut.write("/endfile\n".getBytes());
-
+            serverOut.flush();
             fileInput.close();
-            System.out.println("File uploaded: " + file.getName());
 
-            // Close the serverOut stream
-            serverOut.close();
+            System.out.println("File uploaded: " + file.getName());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -391,3 +385,4 @@ public class ClientChat {
         }
     }
 }
+

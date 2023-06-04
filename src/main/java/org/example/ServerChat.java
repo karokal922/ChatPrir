@@ -231,28 +231,19 @@ public class ServerChat {
                 e.printStackTrace();
             } finally {
                 try {
-                    clientSocket.close();
+                    if (!clientSocket.isClosed()) {
+                        clientSocket.close();
+                    }
                 } catch (IOException e) {
-                    // Ignore any errors that occur while closing the socket
+                    e.printStackTrace();
                 }
             }
         }
 
-        private void handleClientMessage(String clientMessage) throws IOException {
+        private void handleClientMessage(String clientMessage) {
             if (username == null) {
                 username = clientMessage;  // Set the username when received from the client
                 System.out.println(username + " entered the chat.");
-            } else if (clientMessage.startsWith("/upload")) {
-                String fileName = clientMessage.substring("/upload ".length());
-                try {
-                    receiveFile(fileName, clientSocket.getInputStream());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    throw e;
-                }
-            } else if (clientMessage.equals("/logout")) {
-                System.out.println(username + " logged out from the chat.");
-                clients.remove(this);
             } else {
                 String serverMessage = "[" + username + "]: " + clientMessage;
                 System.out.println(serverMessage);
@@ -285,27 +276,13 @@ public class ServerChat {
 
         private void sendFile(String fileName, PrintWriter clientOut) {
             try {
-                Path filePath = Paths.get("ServerFiles", fileName);
-                if (Files.exists(filePath) && Files.isRegularFile(filePath)) {
-                    File fileToDownload = filePath.toFile();
-
-                    clientOut.println("File available: " + fileToDownload.getName());
-
-                    // Create the client's folder for downloaded files
-                    File clientFolder = new File(username);
-                    if (!clientFolder.exists()) {
-                        if (clientFolder.mkdir()) {
-                            System.out.println("Client folder created: " + clientFolder.getName());
-                        }
-                    }
-
-                    // Copy the file to the client's folder
-                    Path destPath = Paths.get(username, fileToDownload.getName());
-                    Files.copy(fileToDownload.toPath(), destPath);
-
-                    clientOut.println("File downloaded: " + fileToDownload.getName());
+                Path filePath = Paths.get("ServerFiles/" + fileName);
+                if (Files.exists(filePath)) {
+                    clientOut.println("FILE_FOUND");
+                    Files.lines(filePath).forEach(clientOut::println);
+                    clientOut.println("/endfile");
                 } else {
-                    clientOut.println("File not found: " + fileName);
+                    clientOut.println("FILE_NOT_FOUND");
                 }
             } catch (IOException e) {
                 e.printStackTrace();
