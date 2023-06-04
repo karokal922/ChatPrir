@@ -350,6 +350,9 @@ public class ClientChat {
 
             fileInput.close();
             System.out.println("File uploaded: " + file.getName());
+
+            // Close the serverOut stream
+            serverOut.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -215,7 +215,7 @@ public class ServerChat {
                 while ((clientMessage = clientIn.readLine()) != null) {
                     if (clientMessage.startsWith("/upload")) {
                         String fileName = clientMessage.substring("/upload ".length());
-                        receiveFile(fileName, clientSocket.getOutputStream());
+                        receiveFile(fileName, clientSocket.getInputStream());
                     } else if (clientMessage.startsWith("/download")) {
                         String fileName = clientMessage.substring("/download ".length());
                         sendFile(fileName, clientOut);
@@ -243,10 +243,18 @@ public class ServerChat {
             }
         }
 
-        private void handleClientMessage(String clientMessage) {
+        private void handleClientMessage(String clientMessage) throws IOException {
             if (username == null) {
                 username = clientMessage;  // Set the username when received from the client
                 System.out.println(username + " entered the chat.");
+            } else if (clientMessage.startsWith("/upload")) {
+                String fileName = clientMessage.substring("/upload ".length());
+                try {
+                    receiveFile(fileName, clientSocket.getInputStream());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    throw e;
+                }
             } else {
                 String serverMessage = "[" + username + "]: " + clientMessage;
                 System.out.println(serverMessage);
@@ -254,14 +262,13 @@ public class ServerChat {
             }
         }
 
-        private void receiveFile(String fileName, OutputStream outputStream) {
+        private void receiveFile(String fileName, InputStream clientInput) {
             try {
                 File file = new File("ServerFiles/" + fileName);
 
                 FileOutputStream fileOutput = new FileOutputStream(file);
                 BufferedOutputStream bufferedOutput = new BufferedOutputStream(fileOutput);
 
-                InputStream clientInput = clientSocket.getInputStream();
                 byte[] buffer = new byte[8192];
                 int bytesRead;
                 while ((bytesRead = clientInput.read(buffer)) != -1) {
