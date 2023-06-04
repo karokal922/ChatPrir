@@ -271,7 +271,8 @@ import java.io.*;
 import java.net.Socket;
 
 public class ClientChat {
-    private static final String SERVER_HOST = "localhost";
+    //private static final String SERVER_HOST = "localhost";
+    private static final String SERVER_HOST = "157.158.137.6";
     private static final int SERVER_PORT = 8080;
 
     public static void main(String[] args) {
