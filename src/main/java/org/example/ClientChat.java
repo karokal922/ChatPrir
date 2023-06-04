@@ -271,7 +271,7 @@ import java.io.*;
 import java.net.Socket;
 
 public class ClientChat {
-    private static final String SERVER_HOST = "localhost";
+    private static final String SERVER_HOST = "157.158.137.6";
     private static final int SERVER_PORT = 8080;
 
     public static void main(String[] args) {
@@ -292,9 +292,7 @@ public class ClientChat {
                 try {
                     String serverMessage;
                     while ((serverMessage = serverIn.readLine()) != null) {
-                        if (!serverMessage.startsWith("[" + username + "]:")) {
-                            System.out.println(serverMessage);
-                        }
+                        System.out.println(serverMessage);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -315,7 +313,7 @@ public class ClientChat {
                     serverOut.println("/logout");
                     break;
                 } else {
-                    serverOut.println(clientMessage);
+                    serverOut.println("[" + username + "]: " + clientMessage);
                 }
             }
 
@@ -385,4 +383,5 @@ public class ClientChat {
         }
     }
 }
+
 
