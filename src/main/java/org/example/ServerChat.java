@@ -227,14 +227,9 @@ public class ServerChat {
                         handleClientMessage(clientMessage);
                     }
                 }
-
-                System.out.println(username + " logged out from the chat.");
-                clients.remove(this);
-                clientSocket.close();
             } catch (IOException e) {
                 e.printStackTrace();
-            }
-            finally {
+            } finally {
                 try {
                     clientSocket.close();
                 } catch (IOException e) {
@@ -255,6 +250,9 @@ public class ServerChat {
                     e.printStackTrace();
                     throw e;
                 }
+            } else if (clientMessage.equals("/logout")) {
+                System.out.println(username + " logged out from the chat.");
+                clients.remove(this);
             } else {
                 String serverMessage = "[" + username + "]: " + clientMessage;
                 System.out.println(serverMessage);
