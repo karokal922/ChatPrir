@@ -89,7 +89,7 @@ public class ServerChat {
 
         private void handleClientMessage(String clientMessage) {
             if (username == null) {
-                username = clientMessage;  // Set the username when received from the client
+                username = clientMessage;
                 System.out.println(username + " entered the chat.");
             } else {
                 String serverMessage = "[" + username + "]: " + clientMessage;
